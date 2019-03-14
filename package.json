@@ -1,0 +1,7 @@
+{
+  "name": "docutils-serve",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Kay McCormick <kay@kaymccormick.com>",
+  "license": "MIT"
+}
