@@ -3,7 +3,6 @@ var ReactDOMServer = require('react-dom/server');
 var setupSaxParser = require('docutils-react/lib/getComponentForXmlSax').setupSaxParser;
 var path = require('path');
 var React = require('react');
-var App = require('../lib/App').default;
 
 /**
  *
@@ -41,6 +40,7 @@ function handleDocumentStream({stream, parser, output}) {
     stream.setEncoding('utf8');
     stream.on('readable', () => streamReader({stream, parser, output}));
     return new Promise((resolve, reject) => {
+	stream.on('error', (error) => { reject(error); })
 	stream.on('end', () => { parser.close(); resolve({output});}); 
     });
 }
@@ -67,22 +67,23 @@ module.exports = function(options) {
 		.then((stream) => {
 		    if(!stream) {
 		    } else {
-			handleDocumentStream({ stream, parser, output }).then(o => {
+			return handleDocumentStream({ stream, parser, output }).then(o => {
 			    console.log(o);
 			});
 		    }
 		}).catch(reject);
 	}).then(o => {
-	    var app = React.createElement(App, { component: o.component });
+	    var app = options.createAppElement({ component: o.component });
 	    return ReactDOMServer.renderToStaticMarkup(app);
 	}).then(markup => {
-	    res.render('doc', { title:'',
+	    res.render('doc', { title:'Title',
 				markup,
 				xml: output.data,
 				entry: "/bundle.js",
 			      } );
 	}).catch(err => {
 	    console.log(err.stack);
+	    next()
 	});
     }
 }
